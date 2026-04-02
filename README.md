@@ -1,9 +1,12 @@
 # Benchmark de Paralelismo com Multiprocessing em Python
 
 **Disciplina:** Programação Concorrente e Distribuída  
-**Aluno:** Lucas Vasconcelos Pessoa de Oliveira, Joao Gabriel Lucas Pinheiro de Lima, Gabriel Yan Ribeiro da Costa, Waldo Andrade Silva
 **Turma:** ADSN04  
 **Professor:** Rafael  
+**Aluno 1:**Lucas Vasconcelos Pessoa de Oliveira
+**Aluno 2:**Joao Gabriel Lucas Pinheiro de Lima
+**Aluno 3:** Gabriel Yan Ribeiro da Costa
+**Aluno 4:**Waldo Andrade Silva
 **Data:** 01/04/2026  
 
 ---
