@@ -1,7 +1,7 @@
 # Benchmark de Paralelismo com Multiprocessing em Python
 
 **Disciplina:** Programação Concorrente e Distribuída  
-**Aluno:** Lucas Vasconcelos Pessoa de Oliveira  
+**Aluno:** Lucas Vasconcelos Pessoa de Oliveira, Joao Gabriel Lucas Pinheiro de Lima, Gabriel Yan Ribeiro da Costa, Waldo Andrade Silva
 **Turma:** ADSN04  
 **Professor:** Rafael  
 **Data:** 01/04/2026  
@@ -57,11 +57,11 @@ Cada configuração foi rodada **1 vez**, com a pasta `partes_cinza/` limpa ante
 
 | Nº Processos | Tempo de Execução (s) |
 |:------------:|:---------------------:|
-| 1            | 155.87                |
-| 2            | 101.47                |
-| 4            | 87.61                 |
-| 8            | 93.72                 |
-| 12           | 88.40                 |
+| 1            | 154.95                |
+| 2            | 131.24                |
+| 4            | 86.96                 |
+| 8            | 84.31                 |
+| 12           | 110.60                |
 
 ---
 
@@ -85,26 +85,29 @@ Eficiência(p) = Speedup(p) / p
 
 | Processos | Tempo (s) | Speedup | Eficiência |
 |:---------:|:---------:|:-------:|:----------:|
-| 1         | 155.87    | 1.00    | 1.00       |
-| 2         | 101.47    | 1.54    | 0.77       |
-| 4         | 87.61     | 1.78    | 0.45       |
-| 8         | 93.72     | 1.66    | 0.21       |
-| 12        | 88.40     | 1.76    | 0.15       |
+| 1         | 154.95    | 1.00    | 1.00       |
+| 2         | 131.24    | 1.18    | 0.59       |
+| 4         | 86.96     | 1.78    | 0.45       |
+| 8         | 84.31     | 1.84    | 0.23       |
+| 12        | 110.60    | 1.40    | 0.12       |
 
-> **Melhor resultado: 4 processos (87.61s)**
+> **Melhor resultado: 8 processos (84.31s)**
 
 ---
 
 ## 7. Análise dos Resultados
 
-O ganho de desempenho foi modesto comparado ao ideal teórico. Com 2 processos houve uma melhora de 1.54x, e com 4 processos chegou ao melhor resultado (1.78x). A partir daí, aumentar o número de processos não trouxe ganho adicional — com 8 e 12 processos o tempo até piorou levemente em relação a 4.
+O ganho de desempenho foi modesto comparado ao ideal teórico. Com 2 processos a melhora foi pequena (1.18x), provavelmente por contenção de I/O já nesse nível. Com 4 processos o ganho foi mais expressivo (1.78x), e com 8 processos chegou ao melhor resultado (1.84x). Com 12 processos o tempo piorou significativamente — subindo de 84.31s para 110.60s.
 
 O principal fator limitante nesse experimento é o **gargalo de I/O em disco**. Como a imagem tem ~16 GB, todos os processos precisam ler e escrever grandes volumes de dados simultaneamente, gerando contenção no acesso ao armazenamento. Diferente de workloads puramente computacionais, aqui o disco é o gargalo — não a CPU.
 
-A eficiência caiu rapidamente com o aumento de processos (de 0.77 com 2 processos para 0.15 com 12), confirmando que o overhead de I/O supera o ganho de paralelismo a partir de um certo ponto.
+O comportamento com 12 processos tem uma explicação adicional: o i7-12700 possui arquitetura híbrida com **8 P-cores (Performance)** e **4 E-cores (Eficiência)**. Com 12 processos, os 4 extras foram alocados nos E-cores, que são mais lentos. Como o `pool.map` aguarda todos os processos terminarem, os E-cores atrasaram o tempo total.
+
+A eficiência caiu rapidamente com o aumento de processos (de 0.59 com 2 processos para 0.12 com 12), confirmando que o overhead de I/O e a arquitetura híbrida superam o ganho de paralelismo a partir de um certo ponto.
 
 **Principais fatores limitantes:**
 - Contenção de I/O — múltiplos processos lendo/escrevendo no mesmo disco simultaneamente
+- Arquitetura híbrida do i7-12700 — E-cores mais lentos penalizam o tempo total com 12 processos
 - Overhead de criação e gerenciamento dos subprocessos
 - Memória RAM limitada para buffers simultâneos de leitura
 
@@ -112,9 +115,9 @@ A eficiência caiu rapidamente com o aumento de processos (de 0.77 com 2 process
 
 ## 8. Conclusão
 
-O paralelismo trouxe ganho moderado de desempenho, reduzindo o tempo de 155.87s para 87.61s com 4 processos (speedup de 1.78x).
+O paralelismo trouxe ganho moderado de desempenho, reduzindo o tempo de 154.95s para 84.31s com 8 processos (speedup de 1.84x).
 
-O ganho não foi linear porque o gargalo principal é o acesso ao disco, não a capacidade de processamento da CPU. Para workloads com I/O intensivo em arquivos muito grandes, o ganho com paralelismo é limitado — o ponto ótimo foi 4 processos, após o qual a contenção de disco anulou os benefícios adicionais.
+O ganho não foi linear porque o gargalo principal é o acesso ao disco, não a capacidade de processamento da CPU. Com 12 processos o tempo piorou em relação a 8, explicado pela combinação de contenção de I/O e pela arquitetura híbrida do i7-12700 — os 4 E-cores mais lentos atrasaram o tempo total do pool.
 
 **Melhorias futuras:**
 - Usar SSD NVMe para reduzir o gargalo de I/O
