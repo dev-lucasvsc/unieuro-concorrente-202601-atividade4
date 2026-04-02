@@ -1,26 +1,123 @@
-# unieuro-concorrente-202601-atividade4
-Aplicador de filtro em imagem de forma paralela.
+# Benchmark de Paralelismo com Multiprocessing em Python
 
+**Disciplina:** Programação Concorrente e Distribuída  
+**Aluno:** Lucas Vasconcelos Pessoa de Oliveira  
+**Turma:** ADSN04  
+**Professor:** Rafael  
+**Data:** 01/04/2026  
 
-## Passo-a-passo
+---
 
-A atividade será realizada em grupo de 4 alunos.
+## 1. Descrição do Problema
 
-1) Apenas 1 aluno deverá realizar o fork desse repositório para poder trabalhar na solução.
-2) Adicionar os demais alunos do grupo como membro do repositório.
-3) Execute o programa python de geração da imagem apenas uma vez. Ele vai criar uma imagem de 16gb.
+O programa foi feito pra processar uma **imagem PPM de ~16 GB** em paralelo, dividindo o trabalho entre vários processos ao mesmo tempo pra ver se fica mais rápido.
+
+A imagem é dividida em partes horizontais iguais. Cada parte é convertida individualmente para escala de cinza usando a fórmula de luminância padrão. No final, todas as partes são reunidas em uma única imagem de saída.
+
+| Pergunta | Resposta |
+|----------|----------|
+| Objetivo | Converter uma imagem PPM de ~16 GB para escala de cinza em paralelo e comparar os tempos |
+| Volume de dados | Imagem 75672x75672 pixels — ~16 GB — dividida em 12 partes |
+| Algoritmo | Divisão horizontal da imagem + processamento paralelo com `multiprocessing.Pool.map()` chamando `conversoremescalacinza.py` como subprocesso |
+| Complexidade | O(N/p) — quanto mais processos, menos pixels por processo |
+
+---
+
+## 2. Ambiente Experimental
+
+| Item | Descrição |
+|------|-----------|
+| Processador | 12th Gen Intel Core i7-12700 — 2.10 GHz |
+| Número de núcleos | 12 núcleos físicos / 20 threads lógicas |
+| Memória RAM | 16,0 GB (utilizável: 15,7 GB) |
+| Sistema Operacional | Windows 11 — 64 bits |
+| Linguagem utilizada | Python 3.13 |
+| Biblioteca de paralelização | `multiprocessing` (já vem com o Python) |
+| Compilador / Versão | CPython 3.13 |
+
+---
+
+## 3. Metodologia de Testes
+
+O tempo foi medido usando `time.time()`, contando o tempo total do processamento paralelo — da criação dos processos até a conclusão de todas as partes.
+
+Cada configuração foi rodada **1 vez**, com a pasta `partes_cinza/` limpa antes de cada execução para garantir que os resultados não fossem influenciados por arquivos já existentes.
+
+### Configurações testadas
+
+- 1 processo
+- 2 processos
+- 4 processos
+- 8 processos
+- 12 processos
+
+---
+
+## 4. Resultados Experimentais
+
+| Nº Processos | Tempo de Execução (s) |
+|:------------:|:---------------------:|
+| 1            | 155.87                |
+| 2            | 101.47                |
+| 4            | 87.61                 |
+| 8            | 93.72                 |
+| 12           | 88.40                 |
+
+---
+
+## 5. Cálculo de Speedup e Eficiência
+
+O **speedup** mostra quantas vezes ficou mais rápido em relação ao tempo sem paralelismo:
+
 ```
-python .\geradorimagem.py
+Speedup(p) = T(1) / T(p)
 ```
-4) Executar o programa que converte a imagem gerada em uma nova imagem em escala em cinza na versão serial.
+
+A **eficiência** mostra se os processos estão sendo bem aproveitados (1,0 seria o ideal):
+
 ```
-python .\conversoremescalacinza.py imagem_entrada.ppm imagem_saida.ppm
+Eficiência(p) = Speedup(p) / p
 ```
-✅ Processamento concluído!  
-⏱️ Tempo total: 171.11 segundos
 
-5) Se reunam e decidam uma forma de paralelizar a execução dessa atividade sem alterar o programa original de conversão (conversoremescalacinza.py). Vocês devem tratar esse programa como uma caixa-preta que não pode ser modificada. A solução de paralelização deve ser externa ao programa.
+---
 
-6) Implementem a solução planejada e execute o experimento para 2, 4, 8 e 12 threads.
+## 6. Tabela de Resultados
 
-7) Crie o relatório no modelo que estámos trabalhando nas atividades e preenchar o questionário no AVA.
+| Processos | Tempo (s) | Speedup | Eficiência |
+|:---------:|:---------:|:-------:|:----------:|
+| 1         | 155.87    | 1.00    | 1.00       |
+| 2         | 101.47    | 1.54    | 0.77       |
+| 4         | 87.61     | 1.78    | 0.45       |
+| 8         | 93.72     | 1.66    | 0.21       |
+| 12        | 88.40     | 1.76    | 0.15       |
+
+> **Melhor resultado: 4 processos (87.61s)**
+
+---
+
+## 7. Análise dos Resultados
+
+O ganho de desempenho foi modesto comparado ao ideal teórico. Com 2 processos houve uma melhora de 1.54x, e com 4 processos chegou ao melhor resultado (1.78x). A partir daí, aumentar o número de processos não trouxe ganho adicional — com 8 e 12 processos o tempo até piorou levemente em relação a 4.
+
+O principal fator limitante nesse experimento é o **gargalo de I/O em disco**. Como a imagem tem ~16 GB, todos os processos precisam ler e escrever grandes volumes de dados simultaneamente, gerando contenção no acesso ao armazenamento. Diferente de workloads puramente computacionais, aqui o disco é o gargalo — não a CPU.
+
+A eficiência caiu rapidamente com o aumento de processos (de 0.77 com 2 processos para 0.15 com 12), confirmando que o overhead de I/O supera o ganho de paralelismo a partir de um certo ponto.
+
+**Principais fatores limitantes:**
+- Contenção de I/O — múltiplos processos lendo/escrevendo no mesmo disco simultaneamente
+- Overhead de criação e gerenciamento dos subprocessos
+- Memória RAM limitada para buffers simultâneos de leitura
+
+---
+
+## 8. Conclusão
+
+O paralelismo trouxe ganho moderado de desempenho, reduzindo o tempo de 155.87s para 87.61s com 4 processos (speedup de 1.78x).
+
+O ganho não foi linear porque o gargalo principal é o acesso ao disco, não a capacidade de processamento da CPU. Para workloads com I/O intensivo em arquivos muito grandes, o ganho com paralelismo é limitado — o ponto ótimo foi 4 processos, após o qual a contenção de disco anulou os benefícios adicionais.
+
+**Melhorias futuras:**
+- Usar SSD NVMe para reduzir o gargalo de I/O
+- Processar os pixels em memória sem escrita intermediária em disco
+- Executar múltiplas vezes e calcular média para maior confiabilidade dos resultados
+- Testar com `ProcessPoolExecutor` do `concurrent.futures` para comparação
