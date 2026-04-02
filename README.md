@@ -95,7 +95,26 @@ Eficiência(p) = Speedup(p) / p
 
 ---
 
-## 7. Análise dos Resultados
+## 7. Gráfico de Tempo de Execução
+
+![Gráfico Tempo Execução](tempo.execucao.png)
+
+---
+
+## 8. Gráfico de Speedup
+
+![Gráfico Speedup](speedup.png)
+
+---
+
+## 9. Gráfico de Eficiência
+
+![Gráfico Eficiência](eficiencia.png)
+
+---
+
+
+## 10. Análise dos Resultados
 
 O ganho de desempenho foi modesto comparado ao ideal teórico. Com 2 processos a melhora foi pequena (1.18x), provavelmente por contenção de I/O já nesse nível. Com 4 processos o ganho foi mais expressivo (1.78x), e com 8 processos chegou ao melhor resultado (1.84x). Com 12 processos o tempo piorou significativamente — subindo de 84.31s para 110.60s.
 
@@ -113,7 +132,7 @@ A eficiência caiu rapidamente com o aumento de processos (de 0.59 com 2 process
 
 ---
 
-## 8. Conclusão
+## 11. Conclusão
 
 O paralelismo trouxe ganho moderado de desempenho, reduzindo o tempo de 154.95s para 84.31s com 8 processos (speedup de 1.84x).
 
