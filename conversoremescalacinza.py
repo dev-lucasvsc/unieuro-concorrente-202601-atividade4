@@ -77,9 +77,9 @@ def converter_para_cinza_serial(
         fim_total = time.time()
         tempo_total = fim_total - inicio_total
 
-        print("\n✅ Processamento concluído!")
-        print(f"⏱️ Tempo total: {tempo_total:.2f} segundos")
-        print(f"⏱️ Tempo total: {tempo_total/60:.2f} minutos")
+        print("\nProcessamento concluido!")
+        print(f"Tempo total: {tempo_total:.2f} segundos")
+        print(f"Tempo total: {tempo_total/60:.2f} minutos")
 
         return tempo_total
 

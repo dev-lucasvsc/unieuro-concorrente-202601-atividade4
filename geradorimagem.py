@@ -13,7 +13,7 @@ def gerar_imagem_ppm_1gb(
 
     Fórmula:
         tamanho_dados = largura * altura * 3 bytes
-    pois cada pixel RGB usa 3 bytes.
+    pois cada pixel RGB usa 3 bytes."
 
     Para largura=18918 e altura=18918:
         18918 * 18918 * 3 = 1.073.671.572 bytes
